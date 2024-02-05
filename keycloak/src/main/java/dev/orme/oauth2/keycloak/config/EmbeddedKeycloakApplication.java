@@ -34,7 +34,7 @@ public class EmbeddedKeycloakApplication extends KeycloakApplication {
     protected ExportImportManager bootstrap() {
         final ExportImportManager exportImportManager = super.bootstrap();
         createMasterRealmAdminUser();
-        createBaeldungRealm();
+        createCustomRealm();
         return exportImportManager;
     }
 
@@ -58,17 +58,17 @@ public class EmbeddedKeycloakApplication extends KeycloakApplication {
         session.close();
     }
 
-    private void createBaeldungRealm() {
+    private void createCustomRealm() {
         KeycloakSession session = getSessionFactory().create();
 
         try {
             session.getTransactionManager().begin();
 
             RealmManager manager = new RealmManager(session);
-            Resource lessonRealmImportFile = new ClassPathResource(keycloakServerProperties.getRealmImportFile());
+            Resource realmImportFile = new ClassPathResource(keycloakServerProperties.getRealmImportFile());
 
             manager.importRealm(
-                    JsonSerialization.readValue(lessonRealmImportFile.getInputStream(), RealmRepresentation.class));
+                    JsonSerialization.readValue(realmImportFile.getInputStream(), RealmRepresentation.class));
 
             session.getTransactionManager().commit();
         } catch (Exception ex) {

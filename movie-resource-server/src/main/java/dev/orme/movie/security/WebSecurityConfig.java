@@ -29,20 +29,20 @@ public class WebSecurityConfig {
                         .hasAuthority("SCOPE_read")
                         .pathMatchers(HttpMethod.POST, "/movies/**")
                         .hasAuthority("SCOPE_write")
-                        .pathMatchers("/")
+                        .pathMatchers("/**")
                         .permitAll()
                         .anyExchange().authenticated()
                 ).oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
 //                .formLogin(form -> form.disable())
                 .build();
     }
-
+@Bean
     CorsConfigurationSource corsWebFilter() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
         corsConfiguration.setMaxAge(8000L);
-        corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "OPTIONS"));
-
+        corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST"));
+        corsConfiguration.setAllowedHeaders(Arrays.asList("Authorization", ""));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfiguration);
         return source;
