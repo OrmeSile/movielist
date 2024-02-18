@@ -40,8 +40,9 @@ public class MoviesRestController {
 
     //https://www.baeldung.com/spring-5-webclient
     @GetMapping(path = "/get")
-    public @ResponseBody Movie getMovie(@RequestParam int id) {
-        Optional<Movie> movie = movieRepository.findByTmdbId(id);
+    public @ResponseBody Movie getMovie(@RequestParam String id) {
+        int parsedId = Integer.parseInt(id);
+        Optional<Movie> movie = movieRepository.findByTmdbId(parsedId);
         if (movie.isPresent()) return movie.get();
 
         WebClient webClient = WebClient.builder()

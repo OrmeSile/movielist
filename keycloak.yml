@@ -1,0 +1,37 @@
+services:
+  keycloak-db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: /run/secrets/db_user
+      POSTGRES_PASSWORD: /run/secrets/db_password
+    secrets:
+      - db_password
+    volumes:
+      - keycloak:/var/lib/postgresql
+
+  keycloak:
+    depends_on:
+      - keycloak-db
+    restart: always
+    build: keycloak
+    environment:
+      JAVA_OPTS: '-Xms64m -Xmx512m -XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=256m'
+      KC_DB: postgres
+      KC_DB_URL: 'jdbc:postgresql://keycloak-db:5432/'
+      KC_DB_USERNAME: /run/secrets/db_user
+      KC_DB_PASSWORD: /run/secrets/db_password
+      #      KC_HTTP_PORT: 8080
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: password
+    secrets:
+      - db_password
+      - db_user
+
+    command: start --proxy edge --import-realm --hostname-strict false --hostname-strict-https=false --optimized
+
+secrets:
+  db_password:
+    file: secrets/DBPASSWORD
+  db_user:
+    file: secrets/DBUSERNAME

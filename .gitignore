@@ -44,3 +44,5 @@ secrets.yml
 application.properties
 application.yml
 custom-realm.json
+secrets/
+.history
