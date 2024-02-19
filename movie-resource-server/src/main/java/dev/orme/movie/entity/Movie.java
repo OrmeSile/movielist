@@ -1,53 +1,54 @@
 package dev.orme.movie.entity;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import dev.orme.movie.deserializer.MovieDeserializer;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.util.Set;
 
 @Entity
-@JsonIdentityInfo(
-        generator = ObjectIdGenerators.PropertyGenerator.class,
-        property = "id"
-)
-@JsonDeserialize(using = MovieDeserializer.class)
 public class Movie {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    private String uuid;
     private boolean adult;
     private String backdropPath;
-    private String belongsToCollection;
+    @JsonProperty("belongs_to_collection")
+    @ManyToOne(cascade = CascadeType.PERSIST)
+    private MovieCollection movieCollection;
     private int budget;
-    @JsonDeserialize(using = )
-    @ManyToMany(targetEntity = Genre.class)
+    @ManyToMany(cascade = CascadeType.PERSIST)
     private Set<Genre> genres;
     private String title;
     private String originalTitle;
+    @Column(unique = true)
+    @JsonProperty("id")
     private int tmdbId;
     private String homepage;
     private String imdbId;
     private String originalLanguage;
+    @Column(columnDefinition = "TEXT")
     private String overview;
     private Float popularity;
+//    @JsonProperty("poster_path")
     private String posterPath;
-    @ManyToMany(targetEntity = ProductionCompany.class)
+    @ManyToMany(cascade = CascadeType.PERSIST)
     private Set<ProductionCompany> productionCompanies;
-    @ManyToMany(targetEntity = Country.class)
+    @ManyToMany(cascade = CascadeType.PERSIST)
     private Set<Country> productionCountries;
-    private LocalDate releaseDate;
+//    @JsonProperty("release_date")
+    private String releaseDate;
     private int revenue;
     private int runtime;
-    @ManyToMany(targetEntity = Language.class)
+    @ManyToMany(cascade = CascadeType.PERSIST)
+//    @JsonProperty("spoken_languages")
     private Set<Language> spokenLanguages;
     private String status;
     private String tagline;
     private boolean video;
+//    @JsonProperty("vote_average")
     private Float voteAverage;
+//    @JsonProperty("vote_count")
     private int VoteCount;
 
     public boolean isAdult() {
@@ -64,14 +65,6 @@ public class Movie {
 
     public void setBackdropPath(String backdropPath) {
         this.backdropPath = backdropPath;
-    }
-
-    public String getBelongsToCollection() {
-        return belongsToCollection;
-    }
-
-    public void setBelongsToCollection(String belongsToCollection) {
-        this.belongsToCollection = belongsToCollection;
     }
 
     public int getBudget() {
@@ -154,11 +147,19 @@ public class Movie {
         this.productionCountries = productionCountries;
     }
 
-    public LocalDate getReleaseDate() {
+    public MovieCollection getMovieCollection() {
+        return movieCollection;
+    }
+
+    public void setMovieCollection(MovieCollection movieCollection) {
+        this.movieCollection = movieCollection;
+    }
+
+    public String getReleaseDate() {
         return releaseDate;
     }
 
-    public void setReleaseDate(LocalDate releaseDate) {
+    public void setReleaseDate(String releaseDate) {
         this.releaseDate = releaseDate;
     }
 
@@ -226,8 +227,8 @@ public class Movie {
         VoteCount = voteCount;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setUuid(String id) {
+        this.uuid = id;
     }
 
     public String getTitle() {
@@ -246,8 +247,8 @@ public class Movie {
         return tmdbId;
     }
 
-    public String getId() {
-        return id;
+    public String getUuid() {
+        return uuid;
     }
 
     public String getOriginalTitle() {
@@ -261,7 +262,7 @@ public class Movie {
     @Override
     public String toString() {
         return "Movie{" +
-                "id='" + id + '\'' +
+                "id='" + uuid + '\'' +
                 ", originalTitle='" + originalTitle + '\'' +
                 ", tmdbId=" + tmdbId +
                 '}';

@@ -7,7 +7,7 @@ export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false)
   const [localCode, setCode] = useState<string>()
   const [token, setToken] = useState<string>()
-  const [movies, setMovies] = useState<any[]>()
+  const [movies, setMovies] = useState<any[]>([])
   const [movieId, setMovieId] = useState<string>("")
 
   useEffect(()=>{
@@ -41,7 +41,7 @@ export default function Home() {
     e.preventDefault()
     if(!token) return
     const data = await fetch(`${window.location.origin}/api/movies/get`, {headers: {Authorization: `Bearer ${token}`, id: movieId}})
-    setMovies(await data?.json())
+    if(data.ok) setMovies([...movies, await data?.json()]);
   }
   const logout = () => {
 
@@ -61,7 +61,7 @@ export default function Home() {
       {movies && movies.length > 0 && (
         <ul>
           {movies.map(movie => {
-            return <p key={movie.id}>{movie.title}</p>
+            return <p key={movie.id}>{JSON.stringify(movie, null, 2)}</p>
           })}
       </ul>)}
     </main>

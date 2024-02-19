@@ -81,7 +81,7 @@ services:
     container_name: backend
     depends_on:
       - movies-db
-    image: eclipse-temurin:21-jdk-alpine
+    image: eclipse-temurin:21-jdk
     restart: always
     volumes:
       - ./movie-resource-server:/app
@@ -91,7 +91,7 @@ services:
       USE_SYSTEM_CA_CERTS: 1
     ports:
       - 8080:8080
-    command: ./gradlew bootRun
+    command: ./gradlew bootRun --no-daemon
     secrets:
       - tmdb_token
 

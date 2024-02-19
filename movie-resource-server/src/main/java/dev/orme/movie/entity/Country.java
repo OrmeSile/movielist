@@ -1,19 +1,26 @@
 package dev.orme.movie.entity;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import dev.orme.movie.deserializer.CountryDeserializer;
 import jakarta.persistence.*;
 
 import java.util.Set;
 
 @Entity
+@JsonDeserialize(using = CountryDeserializer.class)
 public class Country {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    private String uuid;
+    @Column(unique = true)
+    @JsonAlias("iso_3166_1")
     private String isoIdentifier;
     private String name;
-    @OneToMany(mappedBy = "country")
+    @OneToMany(mappedBy = "originCountry")
     private Set<ProductionCompany> productionCompanies;
-    @ManyToMany(targetEntity = Movie.class)
+    @ManyToMany(mappedBy = "productionCountries")
     private Set<Movie> movies;
 
     public Set<Movie> getMovies() {
@@ -24,12 +31,12 @@ public class Country {
         this.movies = movies;
     }
 
-    public String getId() {
-        return id;
+    public String getUuid() {
+        return uuid;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setUuid(String id) {
+        this.uuid = id;
     }
 
     public String getIsoIdentifier() {

@@ -1,31 +1,31 @@
 package dev.orme.movie.entity;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import dev.orme.movie.deserializer.GenreDeserializer;
 import jakarta.persistence.*;
 
 import java.util.Set;
 
 @Entity
-@JsonIdentityInfo(
-        generator = ObjectIdGenerators.PropertyGenerator.class,
-        property = "id"
-)
+@JsonDeserialize(using = GenreDeserializer.class)
 public class Genre {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    private String uuid;
+    @Column(unique = true)
+    @JsonProperty("id")
     private int tmdbId;
     private String name;
-    @ManyToMany(targetEntity = Movie.class)
+    @ManyToMany(mappedBy = "genres")
     private Set<Movie> movies;
 
-    public void setId(String id) {
-        this.id = id;
+    public void setUuid(String id) {
+        this.uuid = id;
     }
 
-    public String getId() {
-        return id;
+    public String getUuid() {
+        return uuid;
     }
 
     public int getTmdbId() {
