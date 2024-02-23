@@ -5,4 +5,4 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 @JsonDeserialize
-public record CollectionDTO(int id, String name, String posterPath, String backdropPath) {}
+public record CollectionDTO(int id, String name, String poster_path, String backdrop_path) {}

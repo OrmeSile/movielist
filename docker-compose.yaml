@@ -40,6 +40,8 @@ services:
     secrets:
       - db_password
       - db_user
+    ports:
+      - 8081:8080
 
     command: start --proxy edge --import-realm --hostname-strict=false --hostname-strict-https=false --log-console-color=true --optimized
 

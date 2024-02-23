@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface MovieRepository extends CrudRepository<Movie, String> {
     Optional<Movie> findByTmdbId(int id);
+    Optional<Movie> findFirstByOrderByTmdbIdDesc();
 }

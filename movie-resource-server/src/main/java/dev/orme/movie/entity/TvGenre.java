@@ -1,24 +1,15 @@
 package dev.orme.movie.entity;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import dev.orme.movie.deserializer.GenreDeserializer;
 import jakarta.persistence.*;
 
-import java.util.Set;
-
 @Entity
-@JsonDeserialize(using = GenreDeserializer.class)
-public class Genre {
+public class TvGenre {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String uuid;
     @Column(unique = true)
-    @JsonProperty("id")
     private int tmdbId;
     private String name;
-    @ManyToMany(mappedBy = "genres")
-    private Set<Movie> movies;
 
     public void setUuid(String id) {
         this.uuid = id;

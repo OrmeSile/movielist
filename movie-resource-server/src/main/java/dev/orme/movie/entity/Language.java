@@ -8,14 +8,12 @@ import jakarta.persistence.*;
 import java.util.Set;
 
 @Entity
-@JsonDeserialize(using = LanguageDeserializer.class)
 public class Language {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String uuid;
     private String englishName;
     @Column(unique = true)
-    @JsonProperty("iso_639_1")
     private String isoIdentifier;
     private String name;
     @ManyToMany(mappedBy = "spokenLanguages")

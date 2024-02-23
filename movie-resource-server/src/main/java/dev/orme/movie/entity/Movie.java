@@ -1,6 +1,5 @@
 package dev.orme.movie.entity;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -13,16 +12,16 @@ public class Movie {
     private String uuid;
     private boolean adult;
     private String backdropPath;
-    @JsonProperty("belongs_to_collection")
-    @ManyToOne(cascade = CascadeType.PERSIST)
+//    @JsonProperty("belongs_to_collection")
+    @ManyToOne
     private MovieCollection movieCollection;
     private int budget;
     @ManyToMany(cascade = CascadeType.PERSIST)
-    private Set<Genre> genres;
+    private Set<MovieGenre> movieGenres;
     private String title;
     private String originalTitle;
     @Column(unique = true)
-    @JsonProperty("id")
+//    @JsonProperty("id")
     private int tmdbId;
     private String homepage;
     private String imdbId;
@@ -37,7 +36,7 @@ public class Movie {
     @ManyToMany(cascade = CascadeType.PERSIST)
     private Set<Country> productionCountries;
 //    @JsonProperty("release_date")
-    private String releaseDate;
+    private LocalDate releaseDate;
     private int revenue;
     private int runtime;
     @ManyToMany(cascade = CascadeType.PERSIST)
@@ -75,12 +74,12 @@ public class Movie {
         this.budget = budget;
     }
 
-    public Set<Genre> getGenres() {
-        return genres;
+    public Set<MovieGenre> getGenres() {
+        return movieGenres;
     }
 
-    public void setGenres(Set<Genre> genres) {
-        this.genres = genres;
+    public void setGenres(Set<MovieGenre> movieGenres) {
+        this.movieGenres = movieGenres;
     }
 
     public String getHomepage() {
@@ -155,11 +154,11 @@ public class Movie {
         this.movieCollection = movieCollection;
     }
 
-    public String getReleaseDate() {
+    public LocalDate getReleaseDate() {
         return releaseDate;
     }
 
-    public void setReleaseDate(String releaseDate) {
+    public void setReleaseDate(LocalDate releaseDate) {
         this.releaseDate = releaseDate;
     }
 
@@ -263,7 +262,7 @@ public class Movie {
     public String toString() {
         return "Movie{" +
                 "id='" + uuid + '\'' +
-                ", originalTitle='" + originalTitle + '\'' +
+                ", original_title='" + originalTitle + '\'' +
                 ", tmdbId=" + tmdbId +
                 '}';
     }

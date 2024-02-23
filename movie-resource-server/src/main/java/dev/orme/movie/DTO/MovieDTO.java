@@ -2,37 +2,33 @@ package dev.orme.movie.DTO;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import dev.orme.movie.entity.Genre;
-import dev.orme.movie.entity.ProductionCompany;
 
 import java.util.Set;
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 @JsonDeserialize
 public record MovieDTO(
-        String id,
+        int id,
         boolean adult,
-        String backdropPath,
-        CollectionDTO belongsToCollection,
+        String backdrop_path,
+        CollectionDTO belongs_to_collection,
         int budget,
         Set<GenreDTO> genres,
         String title,
-        String originalTitle,
-        int tmdbId,
+        String original_title,
         String homepage,
-        String imdbId,
-        String originalLanguage,
+        String original_language,
         String overview,
         Float popularity,
-        String posterPath,
-        Set<ProducerDTO> productionCompanies,
-        Set<CountryDTO> productionCountries,
-        String releaseDate,
+        String poster_path,
+        Set<ProducerDTO> production_companies,
+        Set<CountryDTO> production_countries,
+        String release_date,
         int revenue,
         int runtime,
-        Set<LanguageDTO> spokenLanguages,
+        Set<LanguageDTO> spoken_languages,
         String status,
         String tagline,
         boolean video,
-        Float voteAverage,
-        int VoteCount
+        Float vote_average,
+        int vote_count
 ) {}

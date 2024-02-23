@@ -9,7 +9,7 @@ import jakarta.persistence.*;
 import java.util.Set;
 
 @Entity
-@JsonDeserialize(using = CountryDeserializer.class)
+
 public class Country {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -18,8 +18,6 @@ public class Country {
     @JsonAlias("iso_3166_1")
     private String isoIdentifier;
     private String name;
-    @OneToMany(mappedBy = "originCountry")
-    private Set<ProductionCompany> productionCompanies;
     @ManyToMany(mappedBy = "productionCountries")
     private Set<Movie> movies;
 
@@ -53,13 +51,5 @@ public class Country {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public Set<ProductionCompany> getProductionCompanies() {
-        return productionCompanies;
-    }
-
-    public void setProductionCompanies(Set<ProductionCompany> productionCompanies) {
-        this.productionCompanies = productionCompanies;
     }
 }
