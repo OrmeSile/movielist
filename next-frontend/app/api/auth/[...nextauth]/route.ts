@@ -1,5 +1,6 @@
-import NextAuth from "next-auth"
+import NextAuth, {Awaitable} from "next-auth"
 import KeycloakProvider from "next-auth/providers/keycloak"
+import {JWT, JWTDecodeParams} from "next-auth/jwt";
 
 //TODO pass cookie to resource server. add cookie support on spring
 export const handler = NextAuth({
@@ -12,7 +13,7 @@ export const handler = NextAuth({
       jwks_endpoint: "http://keycloak:8080/realms/movies/protocol/openid-connect/certs",
       authorization: {
         params: {
-          scope: "openid read write email profile"
+          scope: "openid email profile"
         },
         url: `${process.env.KEYCLOAK_ISSUER}/protocol/openid-connect/auth`
       },
