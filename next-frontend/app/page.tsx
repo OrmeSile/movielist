@@ -1,6 +1,7 @@
 'use client'
 import {useEffect, useState} from "react";
 import {useSearchParams} from "next/dist/client/components/navigation";
+import {SessionProvider} from "next-auth/react";
 
 export default function Home() {
 

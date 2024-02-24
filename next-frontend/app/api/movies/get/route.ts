@@ -1,6 +1,10 @@
-export const GET = async (request: Request) => {
+import {cookies} from "next/headers"
+import {getToken} from "next-auth/jwt";
+import {NextRequest} from "next/server";
+export const GET = async (request: NextRequest) => {
   const {body, headers, ...rest} = request
-  const id = headers.get('id')
-  headers.delete('id')
-  return await fetch(`http://backend:8080/movies/get?id=${id}`, {headers})
+  const token = await getToken({req: request, raw: true});
+  console.log("token", token);
+  headers.append("Authorization", `Bearer ${token}`)
+  return await fetch(`http://host.docker.internal:8080/movies/get?id=11836`, {headers: headers})
 }
