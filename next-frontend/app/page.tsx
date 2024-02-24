@@ -2,6 +2,7 @@
 import {useEffect, useState} from "react";
 import {useSearchParams} from "next/dist/client/components/navigation";
 import {SessionProvider} from "next-auth/react";
+import {Button} from "@/components/styled/Button";
 
 export default function Home() {
 
@@ -49,7 +50,7 @@ export default function Home() {
   }
   return (
     <main>
-      {!isLoggedIn ? <button onClick={login}>Login</button>: <button onClick={logout}>Logout</button> }
+      {!isLoggedIn ? <Button onClick={login}>Login</Button>: <Button onClick={logout}>Logout</Button> }
       <button onClick={getToken}>get Token</button>
       {token && <button onClick={fetchData}>fetch all movies</button>}
       {token && (
