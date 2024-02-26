@@ -37,6 +37,7 @@ services:
       KC_DB_PASSWORD: /run/secrets/db_password
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: password
+      KC_HOSTNAME_URL: "https://auth.orme.dev"
     secrets:
       - db_password
       - db_user
