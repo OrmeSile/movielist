@@ -61,6 +61,8 @@ services:
       - ./next-frontend/.next:/app/.next
     working_dir: /app
     command: npm run dev
+    extra_hosts:
+      - "auth.orme.dev:172.17.0.1"
 
   nginx:
     depends_on:

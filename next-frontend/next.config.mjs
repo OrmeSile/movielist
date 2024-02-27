@@ -13,6 +13,14 @@ const nextConfig = {
     }
     ]
   },
+  async rewrites() {
+    return [
+      {
+        source: "/api/movies",
+        destination: "http://host.docker.internal:8080/movies"
+      }
+    ]
+  }
 };
 
 export default nextConfig;

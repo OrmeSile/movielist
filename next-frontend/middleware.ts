@@ -10,7 +10,7 @@ export async function middleware(req: NextRequest) {
   if(!idToken || !accessToken) {
     console.log(req)
     return NextResponse
-      .redirect(`${process.env.NEXT_URL}/api/api-auth/refresh?callback_url=${process.env.NEXT_URL}/${req.nextUrl.pathname}${req.nextUrl.search}`)
+      .redirect(`${process.env.NEXT_URL}/api/auth/refresh?callback_url=${process.env.NEXT_URL}/${req.nextUrl.pathname}${req.nextUrl.search}`)
   }
 }
 

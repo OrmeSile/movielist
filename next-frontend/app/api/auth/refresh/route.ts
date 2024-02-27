@@ -6,7 +6,7 @@ export const GET = async (request: NextRequest) => {
   if(!callbackUrl) return NextResponse.json({error: "missing callback URL"})
   const refreshToken = cookies().get("REFRESH_TOKEN")
   if(!refreshToken) return NextResponse.json({error: "missing refresh token"})
-  const response = await fetch("http://keycloak:8080/realms/movies/protocol/openid-connect/token",
+  const response = await fetch("https://auth.orme.dev/realms/movies/protocol/openid-connect/token",
     {method: 'POST',
       headers: {"Content-Type": "application/x-www-form-urlencoded"},
       body: `charset=utf-8&grant_type=refresh_token&client_id=movies&refresh_token=${refreshToken.value}`

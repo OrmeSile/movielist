@@ -4,7 +4,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
@@ -13,6 +12,8 @@ import org.springframework.security.web.server.util.matcher.PathPatternParserSer
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
+
+import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
@@ -35,11 +36,12 @@ public class WebSecurityConfig {
                         .pathMatchers("/**")
                         .permitAll()
                         .anyExchange().authenticated()
-
+//TODO decode JWE from front https://dev.to/devlix-blog/decrypt-validate-jwe-tokens-with-spring-security-2bb1
                 ).oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
                 .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
                 .build();
     }
+
     @Bean
     CorsConfigurationSource corsWebFilter() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();

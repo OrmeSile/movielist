@@ -18,10 +18,6 @@ export default function Home() {
   }, [])
 
   const code = useSearchParams().get("code")
-  const login = async () => {
-    window.location.assign('https://auth.orme.dev/realms/movies/protocol/openid-connect/auth?response_type=code&scope=openid%20write%20read&client_id=movies&redirect_uri=https://movies.orme.dev/api/api-testing');
-    // await router.push("/api/api-auth")
-  }
 
 
   const getToken = async () => {
@@ -60,7 +56,7 @@ export default function Home() {
   }
   return (
     <main>
-      {!isLoggedIn ? <Button onClick={login}>Login</Button> :
+      {!isLoggedIn ? <Link href={"/auth"}><Button>Login</Button></Link> :
         <Button onClick={logout}>Logout</Button>}
       <button onClick={getToken}>get Token</button>
       {token && <button onClick={fetchData}>fetch all movies</button>}
