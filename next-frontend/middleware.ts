@@ -8,10 +8,12 @@ export async function middleware(req: NextRequest) {
   const accessToken = cookies().get("ACCESS_TOKEN")
   if (!refreshToken) return NextResponse.redirect("https://movies.orme.dev")
   if(!idToken || !accessToken) {
-    console.log(req)
     return NextResponse
       .redirect(`${process.env.NEXT_URL}/api/auth/refresh?callback_url=${process.env.NEXT_URL}/${req.nextUrl.pathname}${req.nextUrl.search}`)
   }
+  const res = NextResponse.next()
+  res.headers.append("Authorization", `Bearer ${accessToken.value}`)
+  return res
 }
 
 export const config = {
