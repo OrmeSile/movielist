@@ -4,14 +4,15 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.Set;
 import java.util.UUID;
 
-@Entity
+@Table("movie_collection")
 public class MovieCollection {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID uuid;
     @JsonProperty("tmdb_id")
     @JsonAlias("id")
@@ -19,8 +20,8 @@ public class MovieCollection {
     private String name;
     private String posterPath;
     private String backdropPath;
-    @OneToMany(mappedBy = "movieCollection", fetch = FetchType.LAZY)
-    @JsonIgnore
+//TODO    @OneToMany(mappedBy = "movieCollection", fetch = FetchType.LAZY)
+//    @JsonIgnore
     private Set<Movie> movies;
 
     public UUID getUuid() {

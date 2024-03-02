@@ -2,23 +2,22 @@ package dev.orme.movie.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.Set;
 import java.util.UUID;
 
-@Entity
+@Table("production_company")
 public class ProductionCompany {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID uuid;
-    @Column(unique = true)
     @JsonProperty("tmdb_id")
     private int tmdbId;
     private String logoPath;
     private String name;
     private String originCountry;
-    @ManyToMany(mappedBy = "productionCompanies", fetch = FetchType.LAZY)
+//TODO    @ManyToMany(mappedBy = "productionCompanies", fetch = FetchType.LAZY)
     @JsonIgnore
     private Set<Movie> movies;
 

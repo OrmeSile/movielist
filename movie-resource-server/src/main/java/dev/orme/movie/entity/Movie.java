@@ -1,51 +1,49 @@
 package dev.orme.movie.entity;
 
 import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 
-@Entity
-@Table(name = "movie", indexes = {@Index(columnList = "release_date ASC", unique = true), @Index(columnList = "release_date DESC", unique = true), @Index(columnList = "popularity ASC"), @Index(columnList = "popularity DESC"), @Index(columnList = "vote_average ASC"), @Index(columnList = "vote_average DESC"), @Index(columnList = "original_title ASC"), @Index(columnList = "original_title DESC")})
+@Table(name = "movie")
 public class Movie {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID uuid;
     private boolean adult;
     private String backdropPath;
     //    @JsonProperty("belongs_to_collection")
-    @ManyToOne(cascade = CascadeType.MERGE)
+//TODO    @ManyToOne(cascade = CascadeType.MERGE)
     private MovieCollection movieCollection;
     private int budget;
-    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
-    @JoinTable(name = "movie_movie_genres", joinColumns = @JoinColumn(name = "movies_uuid"), inverseJoinColumns = @JoinColumn(name = "movie_genres_uuid"))
+//TODO    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+//    @JoinTable(name = "movie_movie_genres", joinColumns = @JoinColumn(name = "movies_uuid"), inverseJoinColumns = @JoinColumn(name = "movie_genres_uuid"))
     private Set<MovieGenre> movieGenres;
     private String title;
     private String originalTitle;
-    @Column(unique = true)
 //    @JsonProperty("id")
     private int tmdbId;
     private String homepage;
     private String imdbId;
     private String originalLanguage;
-    @Column(columnDefinition = "TEXT")
     private String overview;
     private Float popularity;
     //    @JsonProperty("poster_path")
     private String posterPath;
-    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
-    @JoinTable(name = "movie_production_companies", joinColumns = @JoinColumn(name = "movies_uuid"), inverseJoinColumns = @JoinColumn(name = "production_companies_uuid"))
+//TODO    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+//    @JoinTable(name = "movie_production_companies", joinColumns = @JoinColumn(name = "movies_uuid"), inverseJoinColumns = @JoinColumn(name = "production_companies_uuid"))
     private Set<ProductionCompany> productionCompanies;
-    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
-    @JoinTable(name = "movie_production_countries", joinColumns = @JoinColumn(name = "movies_uuid"), inverseJoinColumns = @JoinColumn(name = "production_countries_uuid"))
+//TODO    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+//    @JoinTable(name = "movie_production_countries", joinColumns = @JoinColumn(name = "movies_uuid"), inverseJoinColumns = @JoinColumn(name = "production_countries_uuid"))
     private Set<Country> productionCountries;
     //    @JsonProperty("release_date")
     private LocalDate releaseDate;
     private int revenue;
     private int runtime;
-    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
-    @JoinTable(name = "movie_spoken_languages", joinColumns = @JoinColumn(name = "movies_uuid"), inverseJoinColumns = @JoinColumn(name = "spoken_languages_uuid"))
+//TODO    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+//    @JoinTable(name = "movie_spoken_languages", joinColumns = @JoinColumn(name = "movies_uuid"), inverseJoinColumns = @JoinColumn(name = "spoken_languages_uuid"))
     private Set<Language> spokenLanguages;
     private String status;
     private String tagline;

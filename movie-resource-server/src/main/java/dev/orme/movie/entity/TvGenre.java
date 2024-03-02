@@ -1,15 +1,14 @@
 package dev.orme.movie.entity;
 
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.UUID;
 
-@Entity
+@Table("tv_genre")
 public class TvGenre {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID uuid;
-    @Column(unique = true)
     private int tmdbId;
     private String name;
 
