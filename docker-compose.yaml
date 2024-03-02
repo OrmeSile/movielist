@@ -82,11 +82,17 @@ services:
       - source: fullchain
         target: fullchain.pem
 
+  redis-movies:
+    container_name: backend-cache
+    image: redis:latest
+
+
   spring-movies:
     container_name: backend
     depends_on:
       - movies-db
-    image: docker.io/library/movie-resource-server:0.0.1-SNAPSHOT
+      - redis-movies
+    image: docker.io/library/movie-resource-server:0.0.1-SNAPSHOT #TODO wtf ?
     restart: always
     volumes:
       - ./movie-resource-server:/app
@@ -99,6 +105,7 @@ services:
 #    command: ./gradlew bootRun --no-daemon
     secrets:
       - tmdb_token
+
 
 secrets:
   db_password:
