@@ -6,6 +6,7 @@ import dev.orme.movie.DTO.*;
 import dev.orme.movie.entity.*;
 import dev.orme.movie.repository.*;
 import jakarta.annotation.PostConstruct;
+import jakarta.persistence.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -23,10 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -35,6 +36,7 @@ public class TMDBApi {
     private final String token;
     private final String baseUrl;
     private final WebClient webClient;
+    private final int BATCH_SIZE = 3000;
     @Autowired
     private LanguageRepository languageRepository;
     @Autowired
@@ -50,9 +52,12 @@ public class TMDBApi {
     @Autowired
     private MovieCollectionRepository movieCollectionRepository;
     @Autowired
+    private ImageSizeRepository imageSizeRepository;
+    @Autowired
+    ApiConfigurationRepository apiConfigurationRepository;
+    @Autowired
     private ObjectMapper mapper;
     private Logger logger;
-    private final int BATCH_SIZE = 3000;
 
 
     public TMDBApi() {
@@ -91,6 +96,44 @@ public class TMDBApi {
     private void init() {
         Logger logger = LoggerFactory.getLogger(TMDBApi.class);
         logger.info("Starting database intialization");
+
+        if (imageSizeRepository.count() == 0) {
+            logger.info("table api_configuration is empty. fetching");
+            webClient.get().uri("/configuration")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<ConfigurationDTO>() {
+                    }).flatMap(configurationDTO -> {
+                        Set<ImageSize> imageSizes = new HashSet<>();
+                        Set<ApiConfigurationKeyValue> configurationValues = new HashSet<>();
+                        for (int i = 0 ; i < configurationDTO.images().backdrop_sizes().size() ; i++) {
+                            imageSizes.add(new ImageSize("backdrop", i, configurationDTO.images().backdrop_sizes().get(i)));
+                        }
+                        for (int i = 0 ; i < configurationDTO.images().logo_sizes().size() ; i++) {
+                            imageSizes.add(new ImageSize("logo", i, configurationDTO.images().logo_sizes().get(i)));
+                        }
+                        for (int i = 0 ; i < configurationDTO.images().poster_sizes().size() ; i++) {
+                            imageSizes.add(new ImageSize("poster", i, configurationDTO.images().poster_sizes().get(i)));
+                        }
+                        for (int i = 0 ; i < configurationDTO.images().profile_sizes().size() ; i++) {
+                            imageSizes.add(new ImageSize("profile", i, configurationDTO.images().profile_sizes().get(i)));
+                        }
+                        for (int i = 0 ; i < configurationDTO.images().still_sizes().size() ; i++) {
+                            imageSizes.add(new ImageSize("still", i, configurationDTO.images().still_sizes().get(i)));
+                        }
+                        configurationValues.add(new ApiConfigurationKeyValue("insecure_image_url", configurationDTO.images().base_url()));
+                        configurationValues.add(new ApiConfigurationKeyValue("image_url", configurationDTO.images().secure_base_url()));
+
+                        return Mono.just(Tuples.of(imageSizes, configurationValues));
+                    })
+                    .subscribe(configurationTuple -> {
+                        imageSizeRepository.saveAll(configurationTuple.getT1());
+                        logger.info("saved image sizes.");
+                        apiConfigurationRepository.saveAll(configurationTuple.getT2());
+                        logger.info("saved image Urls.");
+                    });
+        }
+
         if (languageRepository.count() == 0) {
             logger.info("table language is empty. fetching");
             webClient.get().uri("configuration/languages")
