@@ -1,30 +1,33 @@
 package dev.orme.movie.entity;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 import java.util.Set;
+import java.util.UUID;
 
 @Entity
 public class MovieCollection {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String uuid;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID uuid;
     @JsonProperty("tmdb_id")
     @JsonAlias("id")
     private int tmdbId;
     private String name;
     private String posterPath;
     private String backdropPath;
-    @OneToMany(mappedBy = "movieCollection")
+    @OneToMany(mappedBy = "movieCollection", fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<Movie> movies;
 
-    public String getUuid() {
+    public UUID getUuid() {
         return uuid;
     }
 
-    public void setUuid(String uuid) {
+    public void setUuid(UUID uuid) {
         this.uuid = uuid;
     }
 

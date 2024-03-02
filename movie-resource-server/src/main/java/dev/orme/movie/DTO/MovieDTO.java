@@ -30,5 +30,6 @@ public record MovieDTO(
         String tagline,
         boolean video,
         Float vote_average,
-        int vote_count
+        int vote_count,
+        String imdb_id
 ) {}

@@ -47,3 +47,4 @@ custom-realm.json
 secrets/
 .history
 .idea/
+/movie-resource-server/src/main/resources/movie_ids_02_17_2024.json

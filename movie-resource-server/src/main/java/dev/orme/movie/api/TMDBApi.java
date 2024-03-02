@@ -23,6 +23,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -30,8 +33,8 @@ import java.util.stream.Stream;
 @Component
 public class TMDBApi {
     private final String token;
-    private String baseUrl;
-    private WebClient webClient;
+    private final String baseUrl;
+    private final WebClient webClient;
     @Autowired
     private LanguageRepository languageRepository;
     @Autowired
@@ -45,13 +48,18 @@ public class TMDBApi {
     @Autowired
     private MovieRepository movieRepository;
     @Autowired
+    private MovieCollectionRepository movieCollectionRepository;
+    @Autowired
     private ObjectMapper mapper;
+    private Logger logger;
+    private final int BATCH_SIZE = 3000;
 
 
     public TMDBApi() {
+        this.logger = LoggerFactory.getLogger(TMDBApi.class);
         this.baseUrl = "https://api.themoviedb.org/3/";
         this.token = System.getenv("TMDB_TOKEN");
-        System.out.println(this.token);
+        logger.warn("TMDB Token {}", this.token);
         this.webClient = WebClient.builder()
                 .baseUrl(this.baseUrl)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -171,7 +179,7 @@ public class TMDBApi {
                     });
         }
         //Reads file from path. TODO dynamic path + download
-        Mono<Path> fluxFile = Mono.just(Paths.get("C:/download/movie_ids_02_17_2024.json"));
+        Mono<Path> fluxFile = Mono.just(Paths.get("C:/code/react/movielist/movie-resource-server/src/main/resources/movie_ids_02_17_2024.json"));
         fluxFile.subscribe(path -> {
             long lineCount;
             try (Stream<String> stream = Files.lines(path, StandardCharsets.UTF_8)) {
@@ -184,8 +192,8 @@ public class TMDBApi {
             logger.info("repoCount is {}", repoCount);
             if (lineCount > repoCount) {
                 Flux<String> fluxLineReader = Flux.using(
-                        () -> new FileReader("C:/download/movie_ids_02_17_2024.json"),
-                        reader -> Flux.fromStream(new BufferedReader(reader).lines()),
+                        () -> new FileReader("C:/code/react/movielist/movie-resource-server/src/main/resources/movie_ids_02_17_2024.json"),
+                        reader -> Flux.fromStream(new BufferedReader(reader).lines().skip(repoCount)),
                         reader -> {
                             try {
                                 reader.close();
@@ -193,28 +201,31 @@ public class TMDBApi {
                                 logger.error("IOException : {}", e.toString());
                             }
                         });
+                List<Movie> moviesToInsert = new ArrayList<>();
                 fluxLineReader.subscribe(line -> {
-                    int counter = 0;
                     try {
                         MovieLineFileImportDTO movieLineFileImportDTO = mapper.readValue(line, MovieLineFileImportDTO.class);
                         boolean movieIsPresent = movieRepository.findByTmdbId(movieLineFileImportDTO.id()).isPresent();
                         if (movieIsPresent) {
                             return;
                         }
-                        logger.info("adding movie {} to database.", movieLineFileImportDTO);
                         Movie movie = new Movie();
                         movie.setAdult(movieLineFileImportDTO.adult());
                         movie.setTmdbId(movieLineFileImportDTO.id());
                         movie.setOriginalTitle(movieLineFileImportDTO.original_title());
                         movie.setPopularity(movieLineFileImportDTO.popularity());
                         movie.setVideo(movieLineFileImportDTO.video());
-                        movieRepository.save(movie);
-                        counter++;
+                        moviesToInsert.add(movie);
+                        if (moviesToInsert.size() >= BATCH_SIZE) {
+                            movieRepository.saveAll(moviesToInsert);
+                            moviesToInsert.clear();
+                            logger.warn("saved {} movies. Cleared list", BATCH_SIZE);
+                        }
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);
                     }
-                    logger.info("{} movies added.", counter);
                 });
+                movieRepository.saveAll(moviesToInsert);
             } else {
                 logger.info("nothing to add.");
             }
@@ -222,23 +233,30 @@ public class TMDBApi {
     }
 
     private Mono<Movie> convertDtoToMovie(Mono<MovieDTO> dto) {
-        Logger log = LoggerFactory.getLogger(TMDBApi.class);
         return dto.flatMap(movieDto -> {
             Movie movie = new Movie();
-            log.info(movieDto.toString());
             if (movieDto.belongs_to_collection() != null) {
-                MovieCollection collection = new MovieCollection();
-
-                collection.setBackdropPath(movieDto.belongs_to_collection().backdrop_path());
-                collection.setName(movieDto.belongs_to_collection().name());
-                collection.setPosterPath(movieDto.belongs_to_collection().poster_path());
-                collection.setTmdbId(movieDto.belongs_to_collection().id());
-                movie.setMovieCollection(collection);
+                Optional<MovieCollection> dbCollection = movieCollectionRepository.getByName(movieDto.belongs_to_collection().name());
+                if (dbCollection.isPresent()) {
+                    movie.setMovieCollection(dbCollection.get());
+                } else {
+                    MovieCollection collection = new MovieCollection();
+                    collection.setBackdropPath(movieDto.belongs_to_collection().backdrop_path());
+                    collection.setName(movieDto.belongs_to_collection().name());
+                    collection.setPosterPath(movieDto.belongs_to_collection().poster_path());
+                    collection.setTmdbId(movieDto.belongs_to_collection().id());
+                    movie.setMovieCollection(movieCollectionRepository.save(collection));
+                }
             }
 
             movie.setProductionCountries(movieDto.production_countries()
                     .stream()
                     .map(productionCountryDto -> {
+                                var dbCountry = countryRepository.findByIsoIdentifier(productionCountryDto.iso_3166_1());
+                                if (dbCountry.isPresent()) {
+                                    logger.warn(dbCountry.get().toString());
+                                    return dbCountry.get();
+                                }
                                 Country country = new Country();
                                 country.setName(productionCountryDto.english_name());
                                 country.setIsoIdentifier(productionCountryDto.iso_3166_1());
@@ -256,7 +274,7 @@ public class TMDBApi {
                         productionCompany.setLogoPath(producerDTO.logo_path());
                         productionCompany.setTmdbId(producerDTO.id());
                         productionCompany.setOriginCountry(producerDTO.origin_country());
-                        return productionCompany;
+                        return productionCompanyRepository.save(productionCompany);
                     }).collect(Collectors.toSet()));
 
             movie.setSpokenLanguages(movieDto.spoken_languages()
@@ -274,6 +292,8 @@ public class TMDBApi {
             movie.setGenres(movieDto.genres()
                     .stream()
                     .map(genreDTO -> {
+                        var dbGenre = movieGenreRepository.findByTmdbId(genreDTO.id());
+                        if (dbGenre.isPresent()) return dbGenre.get();
                         MovieGenre movieGenre = new MovieGenre();
                         movieGenre.setName(genreDTO.name());
                         movieGenre.setTmdbId(genreDTO.id());
@@ -286,6 +306,7 @@ public class TMDBApi {
             movie.setTitle(movieDto.title());
             movie.setOriginalTitle(movieDto.original_title());
             movie.setTmdbId(movieDto.id());
+            movie.setImdbId(movieDto.imdb_id());
             movie.setHomepage(movieDto.homepage());
             movie.setOriginalLanguage(movieDto.original_language());
             movie.setOverview(movieDto.overview());
@@ -299,7 +320,7 @@ public class TMDBApi {
             movie.setVideo(movieDto.video());
             movie.setVoteAverage(movieDto.vote_average());
             movie.setVoteCount(movieDto.vote_count());
-
+            movie.setUpdated(true);
             return Mono.just(movie);
         });
     }

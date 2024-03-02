@@ -4,19 +4,22 @@ import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.util.Set;
+import java.util.UUID;
 
 @Entity
+@Table(name = "movie", indexes = {@Index(columnList = "release_date ASC", unique = true), @Index(columnList = "release_date DESC", unique = true), @Index(columnList = "popularity ASC"), @Index(columnList = "popularity DESC"), @Index(columnList = "vote_average ASC"), @Index(columnList = "vote_average DESC"), @Index(columnList = "original_title ASC"), @Index(columnList = "original_title DESC")})
 public class Movie {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String uuid;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID uuid;
     private boolean adult;
     private String backdropPath;
-//    @JsonProperty("belongs_to_collection")
-    @ManyToOne
+    //    @JsonProperty("belongs_to_collection")
+    @ManyToOne(cascade = CascadeType.MERGE)
     private MovieCollection movieCollection;
     private int budget;
-    @ManyToMany(cascade = CascadeType.PERSIST)
+    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @JoinTable(name = "movie_movie_genres", joinColumns = @JoinColumn(name = "movies_uuid"), inverseJoinColumns = @JoinColumn(name = "movie_genres_uuid"))
     private Set<MovieGenre> movieGenres;
     private String title;
     private String originalTitle;
@@ -29,26 +32,45 @@ public class Movie {
     @Column(columnDefinition = "TEXT")
     private String overview;
     private Float popularity;
-//    @JsonProperty("poster_path")
+    //    @JsonProperty("poster_path")
     private String posterPath;
-    @ManyToMany(cascade = CascadeType.PERSIST)
+    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @JoinTable(name = "movie_production_companies", joinColumns = @JoinColumn(name = "movies_uuid"), inverseJoinColumns = @JoinColumn(name = "production_companies_uuid"))
     private Set<ProductionCompany> productionCompanies;
-    @ManyToMany(cascade = CascadeType.PERSIST)
+    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @JoinTable(name = "movie_production_countries", joinColumns = @JoinColumn(name = "movies_uuid"), inverseJoinColumns = @JoinColumn(name = "production_countries_uuid"))
     private Set<Country> productionCountries;
-//    @JsonProperty("release_date")
+    //    @JsonProperty("release_date")
     private LocalDate releaseDate;
     private int revenue;
     private int runtime;
-    @ManyToMany(cascade = CascadeType.PERSIST)
-//    @JsonProperty("spoken_languages")
+    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @JoinTable(name = "movie_spoken_languages", joinColumns = @JoinColumn(name = "movies_uuid"), inverseJoinColumns = @JoinColumn(name = "spoken_languages_uuid"))
     private Set<Language> spokenLanguages;
     private String status;
     private String tagline;
     private boolean video;
-//    @JsonProperty("vote_average")
+    //    @JsonProperty("vote_average")
     private Float voteAverage;
-//    @JsonProperty("vote_count")
+    //    @JsonProperty("vote_count")
     private int VoteCount;
+    private boolean isUpdated = false;
+
+    public Set<MovieGenre> getMovieGenres() {
+        return movieGenres;
+    }
+
+    public void setMovieGenres(Set<MovieGenre> movieGenres) {
+        this.movieGenres = movieGenres;
+    }
+
+    public boolean isUpdated() {
+        return isUpdated;
+    }
+
+    public void setUpdated(boolean updated) {
+        isUpdated = updated;
+    }
 
     public boolean isAdult() {
         return adult;
@@ -226,10 +248,6 @@ public class Movie {
         VoteCount = voteCount;
     }
 
-    public void setUuid(String id) {
-        this.uuid = id;
-    }
-
     public String getTitle() {
         return title;
     }
@@ -238,16 +256,20 @@ public class Movie {
         this.title = title;
     }
 
-    public void setTmdbId(int id) {
-        this.tmdbId = id;
-    }
-
     public int getTmdbId() {
         return tmdbId;
     }
 
-    public String getUuid() {
+    public void setTmdbId(int id) {
+        this.tmdbId = id;
+    }
+
+    public UUID getUuid() {
         return uuid;
+    }
+
+    public void setUuid(UUID id) {
+        this.uuid = id;
     }
 
     public String getOriginalTitle() {
@@ -260,10 +282,7 @@ public class Movie {
 
     @Override
     public String toString() {
-        return "Movie{" +
-                "id='" + uuid + '\'' +
-                ", original_title='" + originalTitle + '\'' +
-                ", tmdbId=" + tmdbId +
-                '}';
+        return "Movie{" + "id='" + uuid + '\'' + ", original_title='" + originalTitle + '\'' + ", tmdbId=" + tmdbId + '}';
     }
 }
+

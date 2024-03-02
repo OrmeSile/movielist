@@ -2,20 +2,22 @@ package dev.orme.movie.entity;
 
 import jakarta.persistence.*;
 
+import java.util.UUID;
+
 @Entity
 public class TvGenre {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String uuid;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID uuid;
     @Column(unique = true)
     private int tmdbId;
     private String name;
 
-    public void setUuid(String id) {
+    public void setUuid(UUID id) {
         this.uuid = id;
     }
 
-    public String getUuid() {
+    public UUID getUuid() {
         return uuid;
     }
 

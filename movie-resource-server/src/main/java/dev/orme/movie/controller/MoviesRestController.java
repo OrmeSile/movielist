@@ -1,123 +1,98 @@
 package dev.orme.movie.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import dev.orme.movie.entity.*;
 import dev.orme.movie.repository.*;
 import dev.orme.movie.api.TMDBApi;
+import dev.orme.movie.utils.PageResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
-@Controller
-@RequestMapping(path = "/movies")
+import java.util.*;
+
+@RestController
+@RequestMapping("/movies")
 public class MoviesRestController {
+    @Autowired
+    ObjectMapper mapper;
     @Autowired
     private MovieRepository movieRepository;
     @Autowired
-    private ProductionCompanyRepository productionCompanyRepository;
-    @Autowired
-    private MovieGenreRepository movieGenreRepository;
-    @Autowired
-    private CountryRepository countryRepository;
-    @Autowired
-    private LanguageRepository languageRepository;
-    @Autowired
     private TMDBApi TMDBApi;
-    private static final ObjectMapper mapper = new ObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
 
-    @PostMapping(path = "/add", consumes = "application/json")
-    public @ResponseBody String addNewMovie(@RequestParam String title) {
-        Movie movie = new Movie();
-        movie.setOriginalTitle(title);
-        movieRepository.save(movie);
-        return "Saved";
+    @GetMapping(path = "", produces = "application/json")
+    public Mono<PageResponse<List<Movie>>> getAllMovies(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "50") int pageSize) {
+        if (pageSize > 200)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "page size must be inferior or equal to 200.");
+        if (pageSize < 0) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "page size must not be negative");
+        if (page < 0) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "page number must not be negative.");
+        Slice<Movie> movieSlice = movieRepository.findAllByOrderByTmdbIdAsc(PageRequest.of(page, pageSize));
+        if (movieSlice.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "page not found");
+        Mono<List<Movie>> movies = Flux.fromIterable(movieSlice.getContent())
+                .flatMap(movie -> {
+                    if (!movie.isUpdated()) {
+                        return TMDBApi.getMovieById(movie.getTmdbId()).publishOn(Schedulers.boundedElastic()).flatMap(movie1 -> {
+                            movie1.setUuid(movie.getUuid());
+                            return Mono.just(movieRepository.save(movie1));
+                        });
+                    }
+                    return Mono.just(movie);
+                }).collectList();
+        return movies.map(movies1 -> new PageResponse<>(
+                movies1,
+                movieSlice.previousOrFirstPageable().getPageNumber(),
+                movieSlice.nextOrLastPageable().getPageNumber(),
+                movieSlice.getNumberOfElements()
+        ));
     }
 
-    @GetMapping(path = "/all")
-    public @ResponseBody Iterable<Movie> getAllMovies() {
-        return movieRepository.findAll();
+    //pseudo-reactive / async jpa. TODO convert all controller methods
+
+    @GetMapping(path = "/{id}", produces = "application/json")
+    public Mono<Movie> getMovie(@PathVariable int id) {
+        return Mono.just(id)
+                .publishOn(Schedulers.boundedElastic())
+                .map(subId -> movieRepository.findByTmdbId(subId))
+                .flatMap(movie -> {
+                    if (movie.isEmpty()) {
+                        return TMDBApi
+                                .getMovieById(id)
+                                .publishOn(Schedulers.boundedElastic())
+                                .map(movie1 -> movieRepository.save(movie1));
+                    } else if (!movie.get().isUpdated()) {
+                        return TMDBApi
+                                .getMovieById(id)
+                                .map(m -> {
+                                    m.setUuid(movie.get().getUuid());
+                                    return m;
+                                }).publishOn(Schedulers.boundedElastic())
+                                .map(movie1 -> {
+                                    Movie m = movieRepository.save(movie1);
+                                    System.out.println(m);
+                                    return m;
+                                });
+                    } else {
+                        return Mono.just(movie.get());
+                    }
+                });
+
+//            return movieFromApi.flatMap(fetchedMovie -> {
+//                movie.ifPresent(value -> fetchedMovie.setUuid(value.getUuid()));
+//                return Mono.just(movieRepository.save(fetchedMovie));
+//            });
+//        }
+//        return Mono.just(movie.get());
+
+//        );
     }
-
-
-
-    //https://www.baeldung.com/spring-5-webclient
-    @GetMapping(path = "/get")
-    public @ResponseBody Mono<Movie> getMovie(@RequestParam String id) throws JsonProcessingException {
-        int parsedId = Integer.parseInt(id);
-
-//        Optional<Movie> movie = movieRepository.findByTmdbId(parsedId);
-        Mono<Movie> fetchedMovie = TMDBApi.getMovieById(parsedId);
-        return fetchedMovie.flatMap(movie -> {
-            Movie savedMovie = movieRepository.save(movie);
-            return Mono.just(savedMovie);
-        });
-    }
-
-//        Movie fetchedMovie = mapper.convertValue(res.block(), Movie.class);
-//        if (fetchedMovie.getGenres() != null) {
-//            Set<Genre> genres = fetchedMovie
-//                    .getGenres().stream().map(genre -> {
-//                        var dbMovie = genreRepository.findByTmdbId(genre.getTmdbId());
-//                        return dbMovie.orElse(genre);
-//                    }).collect(Collectors.toSet());
-//            genreRepository.saveAll(genres);
-//            fetchedMovie.setGenres(genres);
-//        }
-//        if (fetchedMovie.getProductionCompanies() != null) {
-//            Set<ProductionCompany> production_companies = fetchedMovie
-//                    .getProductionCompanies()
-//                    .stream().map(productionCompany -> {
-//                        var dbProductionCompany = productionCompanyRepository.findByTmdbId(productionCompany.getTmdbId());
-//                        return dbProductionCompany.orElse(productionCompany);
-//                    }).collect(Collectors.toSet());
-//            productionCompanyRepository.saveAll(production_companies);
-//            fetchedMovie.setProductionCompanies(production_companies);
-//        }
-//        if (fetchedMovie.getSpokenLanguages() != null) {
-//            Set<Language> languages = fetchedMovie
-//                    .getSpokenLanguages()
-//                    .stream().map(language -> {
-//                        var dbLanguage = languageRepository.findByIsoIdentifier(language.getIsoIdentifier());
-//                        return dbLanguage.orElse(language);
-//                    }).collect(Collectors.toSet());
-//            languageRepository.saveAll(languages);
-//            fetchedMovie.setSpokenLanguages(languages);
-//        }
-//        ;
-//        if (fetchedMovie.getProductionCountries() != null) {
-//            Set<Country> countries = fetchedMovie
-//                    .getProductionCountries()
-//                    .stream().map(country -> {
-//                        var dbCountry = countryRepository.findByIsoIdentifier(country.getIsoIdentifier());
-//                        return dbCountry.orElse(country);
-//                    }).collect(Collectors.toSet());
-//            countryRepository.saveAll(countries);
-//            fetchedMovie.setProductionCountries(countries);
-//        }
-//        return movieRepository.save(fetchedMovie);
-//    }
-//
-//    @GetMapping(path = "/find")
-//    public @ResponseBody Iterable<Movie> findMovie(@RequestParam("query") String query) {
-//        WebClient webClient = WebClient.builder()
-//                .baseUrl("https://api.themoviedb.org/3/search/movie")
-//                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-//                .defaultHeader(HttpHeaders.AUTHORIZATION, String.format("Bearer %s", TMDBApi.getToken()))
-//                .defaultUriVariables(Collections.singletonMap("url", "https://api.themoviedb.org/3/search/movie"))
-//                .build();
-//
-//        var uriSpec = webClient.get();
-//        var headersSpec = uriSpec.uri(uriBuilder -> uriBuilder.queryParam("query", query).build());
-//        var responseSpec = headersSpec
-//                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-//                .accept(MediaType.APPLICATION_JSON);
-//        Mono<Object> res = responseSpec.exchangeToMono((ClientResponse response) -> response.bodyToMono(Object.class));
-//        var results = mapper.convertValue(res.block(), MovieSearchRequest.class).results();
-//        return movieRepository.saveAll(results);
-//
-//    }
 }
 

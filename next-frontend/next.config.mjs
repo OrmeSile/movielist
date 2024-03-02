@@ -13,6 +13,7 @@ const nextConfig = {
       },
     ]
   },
+  //TODO adapt for full docker use
   async rewrites() {
     return {
       beforeFiles: [

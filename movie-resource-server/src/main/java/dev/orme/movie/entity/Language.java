@@ -1,29 +1,29 @@
 package dev.orme.movie.entity;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import dev.orme.movie.deserializer.LanguageDeserializer;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.Set;
+import java.util.UUID;
 
 @Entity
 public class Language {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String uuid;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID uuid;
     private String englishName;
     @Column(unique = true)
     private String isoIdentifier;
     private String name;
-    @ManyToMany(mappedBy = "spokenLanguages")
+    @ManyToMany(mappedBy = "spokenLanguages", fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<Movie> movies;
 
-    public String getUuid() {
+    public UUID getUuid() {
         return uuid;
     }
 
-    public void setUuid(String id) {
+    public void setUuid(UUID id) {
         this.uuid = id;
     }
 
