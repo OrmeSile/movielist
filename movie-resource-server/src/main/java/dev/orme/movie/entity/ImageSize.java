@@ -1,6 +1,6 @@
 package dev.orme.movie.entity;
 
-import dev.orme.movie.entity.configuration.ImageSizeCompositeKey;
+import dev.orme.movie.entity.keys.ImageSizeCompositeKey;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;

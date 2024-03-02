@@ -6,4 +6,4 @@ import dev.orme.movie.deserializer.LoginRequestDeserializer;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 @JsonDeserialize(using = LoginRequestDeserializer.class)
-public record LoginRequest (String username, String password) {}
+public record LoginRequestDTO(String username, String password) {}

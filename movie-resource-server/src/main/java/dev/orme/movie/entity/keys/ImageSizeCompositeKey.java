@@ -1,4 +1,4 @@
-package dev.orme.movie.entity.configuration;
+package dev.orme.movie.entity.keys;
 
 import java.io.Serializable;
 import java.util.Objects;

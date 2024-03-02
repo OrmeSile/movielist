@@ -5,11 +5,11 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import dev.orme.movie.DTO.LoginRequest;
+import dev.orme.movie.DTO.LoginRequestDTO;
 
 import java.io.IOException;
 
-public class LoginRequestDeserializer extends StdDeserializer<LoginRequest> {
+public class LoginRequestDeserializer extends StdDeserializer<LoginRequestDTO> {
 
     public LoginRequestDeserializer(){
         this(null);
@@ -19,10 +19,10 @@ public class LoginRequestDeserializer extends StdDeserializer<LoginRequest> {
         super(vc);
     }
     @Override
-    public LoginRequest deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
+    public LoginRequestDTO deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
         JsonNode node = p.getCodec().readTree(p);
         String username = node.get("username").asText();
         String password = node.get("password").asText();
-        return new LoginRequest(username, password);
+        return new LoginRequestDTO(username, password);
     }
 }

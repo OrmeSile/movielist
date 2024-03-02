@@ -1,7 +1,7 @@
 package dev.orme.movie.repository;
 
 import dev.orme.movie.entity.ImageSize;
-import dev.orme.movie.entity.configuration.ImageSizeCompositeKey;
+import dev.orme.movie.entity.keys.ImageSizeCompositeKey;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.Optional;

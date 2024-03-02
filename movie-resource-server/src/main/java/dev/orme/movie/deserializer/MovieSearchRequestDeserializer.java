@@ -7,12 +7,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import dev.orme.movie.entity.Movie;
-import dev.orme.movie.DTO.MovieSearchRequest;
+import dev.orme.movie.DTO.MovieSearchRequestDTO;
 
 import java.io.IOException;
 import java.util.List;
 
-public class MovieSearchRequestDeserializer extends StdDeserializer<MovieSearchRequest> {
+public class MovieSearchRequestDeserializer extends StdDeserializer<MovieSearchRequestDTO> {
 
     private final ObjectMapper mapper;
 
@@ -26,7 +26,7 @@ public class MovieSearchRequestDeserializer extends StdDeserializer<MovieSearchR
     }
 
     @Override
-    public MovieSearchRequest deserialize(JsonParser parser, DeserializationContext context) throws IOException {
+    public MovieSearchRequestDTO deserialize(JsonParser parser, DeserializationContext context) throws IOException {
         JsonNode node = parser.getCodec().readTree(parser);
         int page = (Integer) (node.get("page")).numberValue();
         int totalPages = (Integer) (node.get("total_pages")).numberValue();
@@ -34,6 +34,6 @@ public class MovieSearchRequestDeserializer extends StdDeserializer<MovieSearchR
         String moviesAsString = node.get("results").toString();
         CollectionType javaType = mapper.getTypeFactory().constructCollectionType(List.class, Movie.class);
         List<Movie> asList = mapper.readValue(moviesAsString, javaType);
-        return new MovieSearchRequest(page, totalPages, totalResults, asList);
+        return new MovieSearchRequestDTO(page, totalPages, totalResults, asList);
     }
 }
