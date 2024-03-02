@@ -1,22 +1,21 @@
 package dev.orme.movie.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.Set;
 import java.util.UUID;
 
-@Entity
+@Table("language")
 public class Language {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID uuid;
     private String englishName;
-    @Column(unique = true)
     private String isoIdentifier;
     private String name;
-    @ManyToMany(mappedBy = "spokenLanguages", fetch = FetchType.LAZY)
-    @JsonIgnore
+// TODO   @ManyToMany(mappedBy = "spokenLanguages", fetch = FetchType.LAZY)
+//    @JsonIgnore
     private Set<Movie> movies;
 
     public UUID getUuid() {

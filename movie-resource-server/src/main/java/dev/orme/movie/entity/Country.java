@@ -3,23 +3,23 @@ package dev.orme.movie.entity;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.Set;
 import java.util.UUID;
 
-@Entity
+@Table("country")
 @JsonIgnoreProperties("movies")
 public class Country {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID uuid;
-    @Column(unique = true)
     @JsonAlias("iso_3166_1")
     private String isoIdentifier;
     private String name;
-    @ManyToMany(mappedBy = "productionCountries")
-    @JsonIgnore
+//TODO    @ManyToMany(mappedBy = "productionCountries")
+//    @JsonIgnore
     private Set<Movie> movies;
 
     public Set<Movie> getMovies() {
