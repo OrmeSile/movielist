@@ -1,4 +1,4 @@
-package dev.orme.movie.DTO;
+package dev.orme.movie.dto;
 
 import java.util.List;
 

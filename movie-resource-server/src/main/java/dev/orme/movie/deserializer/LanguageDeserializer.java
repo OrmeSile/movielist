@@ -1,6 +1,5 @@
 package dev.orme.movie.deserializer;
 
-import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -20,7 +19,7 @@ public class LanguageDeserializer extends StdDeserializer<Language> {
     }
 
     @Override
-    public Language deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
+    public Language deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         JsonNode node = p.getCodec().readTree(p);
         String englishName = node.get("english_name").asText();
         String isoIdentifier = node.get("iso_639_1").asText();

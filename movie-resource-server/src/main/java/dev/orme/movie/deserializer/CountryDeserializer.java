@@ -1,6 +1,5 @@
 package dev.orme.movie.deserializer;
 
-import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -19,7 +18,7 @@ public class CountryDeserializer extends StdDeserializer<Country> {
     }
 
     @Override
-    public Country deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
+    public Country deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         JsonNode node = p.getCodec().readTree(p);
         String isoIdentifier = node.get("iso_3166_1").asText();
         String name = node.get("name").asText();
