@@ -1,5 +1,6 @@
 package dev.orme.movie.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
@@ -16,6 +17,7 @@ public class MovieGenre {
     private int tmdbId;
     private String name;
     @ManyToMany(mappedBy = "movieGenres", fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<Movie> movies;
 
     public void setUuid(UUID id) {

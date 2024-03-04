@@ -2,13 +2,12 @@ package dev.orme.movie.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.orme.movie.dto.*;
+import dev.orme.movie.dto.inbound.*;
 import dev.orme.movie.entity.*;
 import dev.orme.movie.repository.*;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -27,10 +26,8 @@ import java.util.stream.Stream;
 
 @Component
 public class TMDBApi {
-    @Value("${MOVIE_API_BASE_URL}")
-    private String BASE_URL;
-    @Value("${TMDB_TOKEN}")
-    private String token;
+    private final String BASE_URL;
+    private final String TOKEN;
     private final RestClient restClient;
     private final int BATCH_SIZE = 3000;
     private final ApiConfigurationRepository apiConfigurationRepository;
@@ -69,10 +66,13 @@ public class TMDBApi {
         this.imageSizeRepository = imageSizeRepository;
         this.mapper = mapper;
         this.logger = LoggerFactory.getLogger(TMDBApi.class);
+        this.TOKEN = System.getenv("TMDB_TOKEN");
+        this.BASE_URL = System.getenv("MOVIE_API_BASE_URL");
+        logger.debug(BASE_URL);
         this.restClient = RestClient.builder()
                 .baseUrl(this.BASE_URL)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .defaultHeader(HttpHeaders.AUTHORIZATION, String.format("Bearer %s", token))
+                .defaultHeader(HttpHeaders.AUTHORIZATION, String.format("Bearer %s", TOKEN))
                 .build();
 //        Path path = Paths.get("/run/secrets/tmdb_token");
 //        try (Stream<String> lines = Files.lines(path)) {
