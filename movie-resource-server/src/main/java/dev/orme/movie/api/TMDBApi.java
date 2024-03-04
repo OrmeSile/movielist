@@ -57,7 +57,7 @@ public class TMDBApi {
     ApiConfigurationRepository apiConfigurationRepository;
     @Autowired
     private ObjectMapper mapper;
-    private Logger logger;
+    private final Logger logger;
 
 
     public TMDBApi() {
