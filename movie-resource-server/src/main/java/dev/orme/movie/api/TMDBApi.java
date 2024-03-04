@@ -6,7 +6,6 @@ import dev.orme.movie.DTO.*;
 import dev.orme.movie.entity.*;
 import dev.orme.movie.repository.*;
 import jakarta.annotation.PostConstruct;
-import jakarta.persistence.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,11 +13,9 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
-import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
 import java.io.*;
@@ -35,8 +32,10 @@ import java.util.stream.Stream;
 public class TMDBApi {
     private final String token;
     private final String baseUrl;
-    private final WebClient webClient;
+    private final RestClient restClient;
     private final int BATCH_SIZE = 3000;
+    @Autowired
+    ApiConfigurationRepository apiConfigurationRepository;
     @Autowired
     private LanguageRepository languageRepository;
     @Autowired
@@ -54,8 +53,6 @@ public class TMDBApi {
     @Autowired
     private ImageSizeRepository imageSizeRepository;
     @Autowired
-    ApiConfigurationRepository apiConfigurationRepository;
-    @Autowired
     private ObjectMapper mapper;
     private Logger logger;
 
@@ -65,7 +62,7 @@ public class TMDBApi {
         this.baseUrl = "https://api.themoviedb.org/3/";
         this.token = System.getenv("TMDB_TOKEN");
         logger.warn("TMDB Token {}", this.token);
-        this.webClient = WebClient.builder()
+        this.restClient = RestClient.builder()
                 .baseUrl(this.baseUrl)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.AUTHORIZATION, String.format("Bearer %s", this.token))
@@ -83,12 +80,12 @@ public class TMDBApi {
 //        }
     }
 
-    public Mono<Movie> getMovieById(int id) {
-        var movieDTO = webClient.get()
+    public Movie getMovieById(int id) {
+        var movieDTO = restClient.get()
                 .uri("movie/" + id)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
-                .bodyToMono(MovieDTO.class);
+                .body(MovieDTO.class);
         return convertDtoToMovie(movieDTO);
     }
 
@@ -99,11 +96,12 @@ public class TMDBApi {
 
         if (imageSizeRepository.count() == 0) {
             logger.info("table api_configuration is empty. fetching");
-            webClient.get().uri("/configuration")
+            ConfigurationDTO configurationDTO = restClient.get().uri("/configuration")
                     .accept(MediaType.APPLICATION_JSON)
                     .retrieve()
-                    .bodyToMono(new ParameterizedTypeReference<ConfigurationDTO>() {
-                    }).flatMap(configurationDTO -> {
+                    .body(new ParameterizedTypeReference<ConfigurationDTO>() {
+                    });
+
                         Set<ImageSize> imageSizes = new HashSet<>();
                         Set<ApiConfigurationKeyValue> configurationValues = new HashSet<>();
                         for (int i = 0 ; i < configurationDTO.images().backdrop_sizes().size() ; i++) {
@@ -124,19 +122,16 @@ public class TMDBApi {
                         configurationValues.add(new ApiConfigurationKeyValue("insecure_image_url", configurationDTO.images().base_url()));
                         configurationValues.add(new ApiConfigurationKeyValue("image_url", configurationDTO.images().secure_base_url()));
 
-                        return Mono.just(Tuples.of(imageSizes, configurationValues));
-                    })
-                    .subscribe(configurationTuple -> {
-                        imageSizeRepository.saveAll(configurationTuple.getT1());
+                        imageSizeRepository.saveAll(imageSizes);
                         logger.info("saved image sizes.");
-                        apiConfigurationRepository.saveAll(configurationTuple.getT2());
+                        apiConfigurationRepository.saveAll(configurationValues);
                         logger.info("saved image Urls.");
                     });
         }
 
         if (languageRepository.count() == 0) {
             logger.info("table language is empty. fetching");
-            webClient.get().uri("configuration/languages")
+            restClient.get().uri("configuration/languages")
                     .accept(MediaType.APPLICATION_JSON)
                     .retrieve()
                     .bodyToMono(new ParameterizedTypeReference<Set<LanguageDTO>>() {
@@ -158,7 +153,7 @@ public class TMDBApi {
 
         if (countryRepository.count() == 0) {
             logger.info("table country is empty. fetching");
-            webClient.get().uri("configuration/countries")
+            restClient.get().uri("configuration/countries")
                     .accept(MediaType.APPLICATION_JSON)
                     .retrieve()
                     .bodyToMono(new ParameterizedTypeReference<Set<CountryDTO>>() {
@@ -179,7 +174,7 @@ public class TMDBApi {
 
         if (movieGenreRepository.count() == 0) {
             logger.info("table movie_genre is empty. fetching");
-            webClient.get().uri("genre/movie/list")
+            restClient.get().uri("genre/movie/list")
                     .accept(MediaType.APPLICATION_JSON)
                     .retrieve()
                     .bodyToMono(GenreListRequestDTO.class)
@@ -203,7 +198,7 @@ public class TMDBApi {
         if (tvGenreRepository.count() == 0) {
             logger.info("table tv_genre is empty. fetching");
 
-            webClient.get().uri("genre/tv/list")
+            restClient.get().uri("genre/tv/list")
                     .accept(MediaType.APPLICATION_JSON)
                     .retrieve()
                     .bodyToMono(GenreListRequestDTO.class)
@@ -275,7 +270,7 @@ public class TMDBApi {
         });
     }
 
-    private Mono<Movie> convertDtoToMovie(Mono<MovieDTO> dto) {
+    private Movie convertDtoToMovie(MovieDTO dto) {
         return dto.flatMap(movieDto -> {
             Movie movie = new Movie();
             if (movieDto.belongs_to_collection() != null) {
