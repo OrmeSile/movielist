@@ -82,11 +82,6 @@ services:
       - source: fullchain
         target: fullchain.pem
 
-  redis-movies:
-    container_name: backend-cache
-    image: redis:latest
-
-
   spring-movies:
     container_name: backend
     depends_on:
