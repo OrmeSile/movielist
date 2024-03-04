@@ -257,11 +257,9 @@ public class TMDBApi {
                             moviesToInsert.clear();
                             logger.warn("saved {} movies. Cleared list", BATCH_SIZE);
                         }
-
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);
                     }
-
                 });
             } catch (IOException e) {
                 throw new RuntimeException(e);
