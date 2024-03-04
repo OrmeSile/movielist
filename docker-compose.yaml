@@ -82,6 +82,15 @@ services:
       - source: fullchain
         target: fullchain.pem
 
+#TODO remove ports for prod
+  redis-movies:
+    restart: always
+    container_name: backend-redis
+    ports:
+      - 6379:6379
+    image: redis:latest
+
+
   spring-movies:
     container_name: backend
     depends_on:
