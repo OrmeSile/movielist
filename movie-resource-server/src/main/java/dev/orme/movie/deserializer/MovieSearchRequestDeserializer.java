@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import dev.orme.movie.entity.Movie;
-import dev.orme.movie.DTO.inbound.MovieSearchRequestDTO;
+import dev.orme.movie.dto.inbound.MovieSearchRequestDTO;
 
 import java.io.IOException;
 import java.util.List;

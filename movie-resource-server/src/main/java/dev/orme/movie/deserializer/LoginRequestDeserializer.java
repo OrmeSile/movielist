@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import dev.orme.movie.DTO.inbound.LoginRequestDTO;
+import dev.orme.movie.dto.inbound.LoginRequestDTO;
 
 import java.io.IOException;
 
