@@ -21,13 +21,8 @@ import java.io.Serializable;
 @AutoConfigureAfter(RedisAutoConfiguration.class)
 @EnableCaching
 public class RedisStandaloneConfiguration {
-    private final CacheManager cacheManager;
     private final String redisHost = "http://localhost";
     private final int redisPort = 6379;
-
-    public RedisStandaloneConfiguration(CacheManager cacheManager) {
-        this.cacheManager = cacheManager;
-    }
 
     @Bean
     public RedisTemplate<String, Serializable> redisCacheTemplate(LettuceConnectionFactory redisConnecionFactory) {
@@ -39,7 +34,7 @@ public class RedisStandaloneConfiguration {
     }
 
     @Bean
-    CacheManager cacheManager(RedisConnectionFactory factory) {
+    RedisCacheManager cacheManager(RedisConnectionFactory factory) {
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig();
         RedisCacheConfiguration redisCacheConfiguration = config
                 .serializeKeysWith(RedisSerializationContext.SerializationPair

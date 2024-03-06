@@ -10,10 +10,9 @@ const handler = async (req: NextRequest) => {
       headers: {"Content-Type": "application/x-www-form-urlencoded"},
       body: `charset=utf-8&grant_type=authorization_code&client_id=movies&redirect_uri=${process.env.NEXT_URL}/api/auth/redirect&code=${code}`
     })
-
   if(!data.ok) return NextResponse.redirect("https://movies.orme.dev")
-
   const objectData = await data.json()
+
   const {id_token, refresh_token, access_token, expires_in, refresh_expires_in} = objectData;
 
   cookies().set({name: "ID_TOKEN", value: id_token,httpOnly: true, secure: true, sameSite: "strict"})

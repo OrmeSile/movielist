@@ -6,7 +6,13 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: "/api/:path*",
+        source: "/api/movies/:path*",
+        headers: [
+          {key: "Access-Control-Allow-Origin", value: "true"}
+        ]
+      },
+      {
+        source: "/api/configuration/:path*",
         headers: [
           {key: "Access-Control-Allow-Origin", value: "true"}
         ]
@@ -19,11 +25,15 @@ const nextConfig = {
       beforeFiles: [
         {
           source: "/api/movies/:path*",
-          destination: "http://host.docker.internal:8080/movies/:path*"
+          destination: "http://host.docker.internal:8080/api/movies/:path*"
+        },
+        {
+          source: "/api/configuration/:path",
+          destination: "http://host.docker.internal:8080/api/configuration/:path*"
         }
       ]
     }
-  }
+  },
 };
 
 export default nextConfig;

@@ -43,13 +43,15 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
-        return http.securityMatcher("/movies/**")
+        return http.securityMatcher("/**")
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.GET, "/movies/**")
                         .access(hasScope("read"))
                         .requestMatchers(HttpMethod.POST, "/movies/**")
                         .access(hasScope("write"))
+                        .requestMatchers(HttpMethod.GET, "/configuration/**")
+                        .access(hasScope("read"))
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
