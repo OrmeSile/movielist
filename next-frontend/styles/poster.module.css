@@ -1,0 +1,33 @@
+.poster {
+    object-fit: contain;
+    box-shadow: 10px 10px 10px black;
+    @media screen and (min-width: 768px) {
+    }
+}
+
+.container {
+    @media screen and (min-width: 768px) {
+    }
+    width: auto;
+    height: 15rem;
+    justify-content: flex-start;
+    align-items: center;
+    position: relative;
+    display: flex;
+}
+
+.backdrop {
+    object-fit: contain;
+}
+
+.poster-container {
+    position: absolute;
+    height: 80%;
+    width: auto;
+}
+
+.backdrop-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}

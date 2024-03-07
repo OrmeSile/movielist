@@ -3,6 +3,12 @@ const nextConfig = {
   compiler: {
     styledComponents: true
   },
+  images: {
+    remotePatterns: [{
+      protocol: "https",
+      hostname: "image.tmdb.org/**",
+    }]
+  },
   async headers() {
     return [
       {

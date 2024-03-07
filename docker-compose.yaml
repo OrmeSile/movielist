@@ -63,6 +63,8 @@ services:
     command: npm run dev
     extra_hosts:
       - "auth.orme.dev:172.17.0.1"
+      - "movies.orme.dev/api/movie:172.17.0.1"
+      - "movies.orme.dev/api/configuration:172.17.0.1"
 
   nginx:
     depends_on:

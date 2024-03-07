@@ -1,0 +1,29 @@
+.header {
+    position: relative;
+    display: flex;
+    flex-flow: column;
+    @media screen and (min-width: 768px) {
+        flex-flow: row nowrap;
+    }
+}
+
+.container {
+    border: dashed red 1px;
+}
+
+.title-container {
+    background: linear-gradient(to top, rgb(255,255,255) 50%, rgba(255,255,255,0) );
+    position: absolute;
+    align-items: center;
+    bottom: 0;
+    display: flex;
+    flex-flow: column nowrap;
+    width: 100%;
+    @media screen and (min-width: 768px) {
+        background: none;
+        align-items: flex-start;
+        border: dashed coral 1px;
+        justify-content: flex-end;
+        position: relative;
+    }
+}

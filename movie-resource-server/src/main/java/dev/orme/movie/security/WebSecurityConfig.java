@@ -1,5 +1,7 @@
 package dev.orme.movie.security;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -12,6 +14,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
+import org.springframework.web.util.WebUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -22,24 +25,6 @@ import static org.springframework.security.oauth2.core.authorization.OAuth2Autho
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig {
-
-//    @Bean
-//    public SecurityWebFilterChain securityFilterChain(ServerHttpSecurity http) {
-//        return http.securityMatcher(new PathPatternParserServerWebExchangeMatcher("/movies/**"))
-//                .csrf(ServerHttpSecurity.CsrfSpec::disable)
-//                .cors(cors -> cors.configurationSource(corsWebFilter()))
-//                .authorizeExchange((exchanges) -> exchanges
-//                        .pathMatchers(HttpMethod.GET, "/movies/**" )
-//                        .access(hasScope("read"))
-//                        .pathMatchers(HttpMethod.POST, "/movies/**")
-//                        .access(hasScope("write"))
-//                        .pathMatchers("/**")
-//                        .permitAll()
-//                        .anyExchange().authenticated()
-//                ).oauth2ResourceServer(oauth2 ->oauth2.jwt(Customizer.withDefaults()))
-//                .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
-//                .build();
-//    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
@@ -53,9 +38,14 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/configuration/**")
                         .access(hasScope("read"))
                         .anyRequest().authenticated())
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
+                .oauth2ResourceServer(oauth2 -> oauth2.bearerTokenResolver(this::tokenExtractor).jwt(Customizer.withDefaults()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .build();
+    }
+
+    public String tokenExtractor(HttpServletRequest request) {
+        Cookie cookie = WebUtils.getCookie(request, "ACCESS_TOKEN");
+        return cookie != null ? cookie.getValue() : null;
     }
 
     @Bean
