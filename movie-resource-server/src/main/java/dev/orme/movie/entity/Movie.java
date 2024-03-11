@@ -14,7 +14,6 @@ public class Movie {
     private UUID uuid;
     private boolean adult;
     private String backdropPath;
-    //    @JsonProperty("belongs_to_collection")
     @ManyToOne(cascade = CascadeType.MERGE)
     private MovieCollection movieCollection;
     private int budget;
@@ -24,7 +23,6 @@ public class Movie {
     private String title;
     private String originalTitle;
     @Column(unique = true)
-//    @JsonProperty("id")
     private int tmdbId;
     private String homepage;
     private String imdbId;
@@ -32,7 +30,6 @@ public class Movie {
     @Column(columnDefinition = "TEXT")
     private String overview;
     private Float popularity;
-    //    @JsonProperty("poster_path")
     private String posterPath;
     @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     @JoinTable(name = "movie_production_companies", joinColumns = @JoinColumn(name = "movies_uuid"), inverseJoinColumns = @JoinColumn(name = "production_companies_uuid"))
@@ -40,7 +37,6 @@ public class Movie {
     @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     @JoinTable(name = "movie_production_countries", joinColumns = @JoinColumn(name = "movies_uuid"), inverseJoinColumns = @JoinColumn(name = "production_countries_uuid"))
     private Set<Country> productionCountries;
-    //    @JsonProperty("release_date")
     private LocalDate releaseDate;
     private int revenue;
     private int runtime;
@@ -50,11 +46,20 @@ public class Movie {
     private String status;
     private String tagline;
     private boolean video;
-    //    @JsonProperty("vote_average")
     private Float voteAverage;
-    //    @JsonProperty("vote_count")
     private int VoteCount;
     private boolean isUpdated = false;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "image_container_id", referencedColumnName = "uuid")
+    private ImagePathContainer images;
+
+    public ImagePathContainer getImages() {
+        return images;
+    }
+
+    public void setImages(ImagePathContainer container) {
+        this.images = container;
+    }
 
     public Set<MovieGenre> getMovieGenres() {
         return movieGenres;

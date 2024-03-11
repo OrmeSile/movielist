@@ -26,9 +26,9 @@ public class MoviesRestController {
     }
 
     @GetMapping(path = "", produces = "application/json")
-    public PageResponse<List<Movie>> getAllMovies(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "50") int pageSize) {
-        if (pageSize > 200)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "page size must be inferior or equal to 200.");
+    public PageResponse<List<Movie>> getAllMovies(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int pageSize) {
+        if (pageSize > 50)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "page size must be inferior or equal to 50.");
         if (pageSize < 0) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "page size must not be negative");
         if (page < 0) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "page number must not be negative.");
         Slice<Movie> movieSlice = movieRepository.findAllByOrderByTmdbIdAsc(PageRequest.of(page, pageSize));
@@ -50,16 +50,17 @@ public class MoviesRestController {
         );
     }
 
-    //pseudo-reactive / async jpa. TODO convert all controller methods
-
     @GetMapping(path = "/{id}", produces = "application/json")
     public Movie getMovie(@PathVariable int id) {
-        Optional<Movie> movie = movieRepository.findByTmdbId(id);
-        if (movie.isPresent()) {
-            if (movie.get().isUpdated()) return movie.get();
-            Optional<Movie> movieFromApi = TMDBApi.getMovieById((movie.get().getTmdbId()));
-            if (movieFromApi.isEmpty()) return movie.get();
-            movieFromApi.get().setUuid(movie.get().getUuid());
+        Optional<Movie> optionalMovie = movieRepository.findByTmdbId(id);
+        if (optionalMovie.isPresent()) {
+            Movie movie = optionalMovie.get();
+            if(movie.isUpdated() && movie.getImages() != null) return movie;
+            Optional<Movie> movieFromApi = TMDBApi.getMovieById(movie.getTmdbId());
+            if(movieFromApi.isEmpty()) return movie;
+            Movie apiMovie = movieFromApi.get();
+            apiMovie.setUuid(movie.getUuid());
+            if(apiMovie.getImages() == null) TMDBApi.getImagesForMovieByTmdbId(movie.getTmdbId()).ifPresent(movie::setImages);
             return movieRepository.save(movieFromApi.get());
         }
         throw new HttpClientErrorException(HttpStatus.NOT_FOUND);

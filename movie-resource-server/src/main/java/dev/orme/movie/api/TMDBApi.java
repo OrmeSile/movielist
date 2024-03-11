@@ -54,7 +54,7 @@ public class TMDBApi {
             MovieCollectionRepository movieCollectionRepository,
             ImageSizeRepository imageSizeRepository,
             ObjectMapper mapper
-            ) {
+    ) {
         this.apiConfigurationRepository = apiConfigurationRepository;
         this.languageRepository = languageRepository;
         this.countryRepository = countryRepository;
@@ -62,7 +62,7 @@ public class TMDBApi {
         this.movieGenreRepository = movieGenreRepository;
         this.tvGenreRepository = tvGenreRepository;
         this.movieRepository = movieRepository;
-        this. movieCollectionRepository = movieCollectionRepository;
+        this.movieCollectionRepository = movieCollectionRepository;
         this.imageSizeRepository = imageSizeRepository;
         this.mapper = mapper;
         this.logger = LoggerFactory.getLogger(TMDBApi.class);
@@ -93,8 +93,51 @@ public class TMDBApi {
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .body(MovieDTO.class);
-        if(movieDTO == null) return Optional.empty();
-        return Optional.of(convertDtoToMovie(movieDTO));
+        if (movieDTO == null) return Optional.empty();
+        Movie movie = convertDtoToMovie(movieDTO);
+        Optional<ImagePathContainer> movieImages = getImagesForMovieByTmdbId(movie.getTmdbId());
+        movieImages.ifPresent(movie::setImages);
+        return Optional.of(movie);
+    }
+
+    public Optional<ImagePathContainer> getImagesForMovieByTmdbId(int id) {
+        Optional<ImageDTO> imagesForMovie = getImageDTOForMovieById(id);
+        if(imagesForMovie.isEmpty()) return Optional.empty();
+        ImagePathContainer container = new ImagePathContainer();
+        imagesForMovie.ifPresent(imageDTO -> {
+            container.setBackdrops(
+                    convertDtoListToImagePathList(imageDTO.backdrops()));
+            container.setLogos(
+                    convertDtoListToImagePathList(imageDTO.logos()));
+            container.setPosters(
+                    convertDtoListToImagePathList(imageDTO.posters()));
+        });
+        return Optional.of(container);
+    }
+
+    private Set<ImagePath> convertDtoListToImagePathList(Set<ImagePathDTO> imagePathDTOList) {
+        return imagePathDTOList.stream().map(imagePathDTO -> {
+            ImagePath path = new ImagePath();
+            path.setAspectRatio(imagePathDTO.aspect_ratio());
+            path.setFilePath(imagePathDTO.file_path());
+            path.setHeight(imagePathDTO.height());
+            path.setIsoIdentifier(imagePathDTO.iso_639_1());
+            path.setWidth(imagePathDTO.width());
+            path.setVoteAverage(imagePathDTO.vote_average());
+            path.setVoteCount(imagePathDTO.vote_count());
+            return path;
+        }).collect(Collectors.toSet());
+    }
+
+    public Optional<ImageDTO> getImageDTOForMovieById(int id) {
+        ImageDTO imageDTO = restClient.get().uri("/movie/" + id + "/images")
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {
+                });
+        if (imageDTO == null) return Optional.empty();
+        logger.debug(imageDTO.toString());
+        return Optional.of(imageDTO);
     }
 
     @PostConstruct
@@ -177,9 +220,10 @@ public class TMDBApi {
                 }).collect(Collectors.toSet());
                 logger.info("saved countries to database.");
                 countryRepository.saveAll(countries);
+
+            } else {
+                logger.error("body of /configuration/countries is null.");
             }
-        } else {
-            logger.error("body of /configuration/countries is null.");
         }
 
         if (movieGenreRepository.count() == 0) {

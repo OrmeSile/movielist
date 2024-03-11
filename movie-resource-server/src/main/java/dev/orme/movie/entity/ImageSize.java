@@ -4,7 +4,6 @@ import dev.orme.movie.entity.keys.ImageSizeCompositeKey;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
-import org.springframework.cache.annotation.CacheConfig;
 
 @Entity
 @IdClass(ImageSizeCompositeKey.class)
